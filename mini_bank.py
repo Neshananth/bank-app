@@ -36,6 +36,7 @@ def creat_account(customer_id, amount):
     balance = amount
     with open('accounts.txt', 'a') as file:
         file.write(f'{account_no},{customer_id},{balance}\n')
+    return account_no
 
 
 # Creat customer
@@ -43,14 +44,15 @@ def creat_customer():
     name = input('Enter Your Name: ')
     address = input('Enter Your Addess: ')
     customer_id = auto_creat_customer_id()
-    with open('customers.txt', 'a') as file:
-        file.write(f'{customer_id},{name},{address}\n')
+
     amount = float(input('Enter Amount Open Balance'))
-    creat_account(customer_id, amount)
+    account_no = creat_account(customer_id, amount)
     username = input('Enter Your username : ')
     password = input('Enter Your password : ')
     with open('users.txt', 'a') as file:
         file.write(f'{customer_id},{username},{password}\n')
+    with open('customers.txt', 'a') as file:
+        file.write(f'{customer_id},{name},{address},{account_no}\n')
 # creat_customer()
 
 
@@ -126,7 +128,7 @@ def transaction(account_no):
         for line in file:
             transaction = line.strip().split(',')
             if int(transaction[1]) == account_no:
-                print(f"{transaction[0]}\t{transaction[2]}\t\t\t{transaction[3]}\t{transaction[4]}")
+                print(f"{transaction[0]}\t{transaction[2]}\t\t\t{transaction[3]}\t{transaction[4]}\n")
 
 
 
@@ -160,25 +162,34 @@ def admin_menu():
 
 # menu
 
-def user_menu():
+def user_menu(customer_id):
+    with open('customers.txt','r') as file:
+        for line in file:
+            customer = line.strip().split(',')
+            if customer_id == customer[0]:
+                account_no = int(customer[3])
     while True:
         print('\n======MAIN MANU======')
         print('1. deposit')
         print('2. withraw')
         print('3. balance')
-        print('4. balance')
-        print('5. balance')
-        print('6. exit')
+        print('4. Transaction History')
+        print('5. exit')
 
         choice = input('choose an option (1-4):')
         if choice == '1':
-            deposit()
+            deposit(account_no)
         elif choice == '2':
-            withdraw()
+            withdraw(account_no)
         elif choice == '3':
-            balance()
+            balance(account_no)
         elif choice == '4':
-            transaction()
+            transaction(account_no)
+        elif choice == '5':
+            exit()
+        else:
+            print('❌Invalid choice... Try Again')
+            
         
 
 
@@ -189,14 +200,16 @@ def login():
     password = input('Enter Your password : ')
     with open('users.txt', 'r') as file:
         for line in file:
-            if username == line.strip().split(',')[1] and password == line.strip().split(',')[2]:
+            user = line.strip().split(',')
+            if username ==  user[1] and password == user[2]:
                 if username =="admin":
                     print('\nAdmin Login successful...\n')
                     admin_menu()
                     break
                 else:
+                    customer_id  = user[0]
                     print('\nusser Login successful...\n')
-                    user_menu()
+                    user_menu(customer_id)
                     break
 
         else:
